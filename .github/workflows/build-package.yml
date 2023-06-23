@@ -33,7 +33,9 @@ jobs:
       - name: Get tag names
         id: tag_names
         if: startsWith(github.ref, 'refs/tags/')
-        run: echo "::set-output name=names::$(echo ${{ github.ref }} | cut -d/ -f3-)"
+        run: echo "get tag names start"
+                 echo "::set-output name=names::$(echo ${{ github.ref }} | cut -d/ -f3-)"
+                 echo "get tag names complete"
 
       - name: Check tags
         run: |
