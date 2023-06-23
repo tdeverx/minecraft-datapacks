@@ -58,7 +58,7 @@ jobs:
         with:
           path: classic-coins/
           type: zip
-          filename: ${{ steps.project_name.outputs.name | lower | replace(" ", "-") }}-${{ steps.tag_names.outputs.names }}.zip
+          filename: release.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: Upload Artifact
