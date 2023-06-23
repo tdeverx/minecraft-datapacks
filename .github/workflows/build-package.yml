@@ -20,11 +20,9 @@ jobs:
 
       -  name: Extract tags
          run: |
-           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}LOL" >> $GITHUB_ENV
-           if [[ $COMMIT_MESSAGE =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
-             TAG_PREFIX="${BASH_REMATCH[1],,}"
-             echo "TAG_PREFIX=${TAG_PREFIX}" >> $GITHUB_ENV
+           echo COMMIT_MESSAGE="${{ github.event.head_commit.message }}" >> $GITHUB_ENV
+           if [[ "${{COMMIT_MESSAGE}}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
+             echo TAG_PREFIX="${BASH_REMATCH[1],,}" >> $GITHUB_ENV
              VERSION_NUMBER="${BASH_REMATCH[3]}"
              echo "VERSION_NUMBER=${VERSION_NUMBER}" >> $GITHUB_ENV
              PROJECT_NAME="${BASH_REMATCH[2],,}"
