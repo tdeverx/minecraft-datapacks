@@ -30,29 +30,19 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      -  name: Get project name
+         id: project_name
+         run: |
+           commit_message="${{ github.event.head_commit.message }}"
+           project_name=$(echo "$commit_message" | grep -oP '(?<=Release: )[^\s]*')
+           if [ -z "$project_name" ]; then
+           project_name=$(echo "$commit_message" | grep -oP '(?<=Update: )[^\s]*')
+           fi
+           echo "::set-output name=name::$project_name"
+
       - name: Get tag names
         id: tag_names
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo "get tag names start"
-                 echo "::set-output name=names::$(echo ${{ github.ref }} | cut -d/ -f3-)"
-                 echo "get tag names complete"
-
-      - name: Check tags
-        run: |
-          if [[ "${{ github.ref }}" != *"v"* && "${{ github.ref }}" != "Release" && "${{ github.ref }}" != "Pre-Release" && "${{ github.ref }}" != "Build" && "${{ github.ref }}" != "Test" ]]; then
-            echo "Required tags not found"
-            exit 1
-          fi
-
-      - name: Get project name
-        id: project_name
-        run: |
-          commit_message="${{ github.event.head_commit.message }}"
-          project_name=$(echo "$commit_message" | grep -oP '(?<=Release: )[^\s]*')
-          if [ -z "$project_name" ]; then
-            project_name=$(echo "$commit_message" | grep -oP '(?<=Update: )[^\s]*')
-          fi
-          echo "::set-output name=name::$project_name"
+        run: echo "::set-output name=names::$(echo ${{ github.event.ref }} | cut -d/ -f3-)"
 
       # Runs a single command using the runners shell
       - name: Archive Release
