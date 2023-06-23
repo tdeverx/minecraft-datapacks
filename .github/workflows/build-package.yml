@@ -36,7 +36,7 @@ jobs:
            
       -   name: Check tags
           run: |
-            if [[ "${TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" ]]; then
+            if [[ "${TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" && "${TAG_PREFIX}" != "build" && "${TAG_PREFIX}" != "test" ]]; then
               echo "Tags are not present in the commit message"
               exit 1
             fi
@@ -54,22 +54,29 @@ jobs:
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}"
           if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
              TAG_PREFIX=${BASH_REMATCH[1]}
-             TAG_PREFIX=${TAG_PREFIX,,}
-             "version_number=${VERSION_NUMBER=${BASH_REMATCH[3]}}"
+             echo TAG_PREFIX=${TAG_PREFIX,,} >> $GITHUB_ENV
+             echo VERSION_NUMBER=${BASH_REMATCH[3]}} >> $GITHUB_ENV
              PROJECT_NAME="${BASH_REMATCH[2]}"
              PROJECT_NAME=${PROJECT_NAME,,}
-             PROJECT_NAME=${PROJECT_NAME// /-}
+             echo PROJECT_NAME=${PROJECT_NAME// /-} >> $GITHUB_ENV
           else
             echo "Invalid commit message format"
             exit 1
           fi
+          
+      -   name: Check tags
+          run: |
+            if [[ "${TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" ]]; then
+              echo "Tags are not present in the commit message"
+              exit 1
+            fi
 
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: PROJECT_NAME/
+          path: ${PROJECT_NAME}/
           type: zip
-          filename: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}
+          filename: ${PROJECT_NAME}-${TAG_PREFIX}-${VERSION_NUMBER}
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
   upload:
@@ -81,9 +88,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      -  name: Extract tags
+         run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}"
+          if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
+             TAG_PREFIX=${BASH_REMATCH[1]}
+             echo TAG_PREFIX=${TAG_PREFIX,,} >> $GITHUB_ENV
+             echo VERSION_NUMBER=${BASH_REMATCH[3]}} >> $GITHUB_ENV
+             PROJECT_NAME="${BASH_REMATCH[2]}"
+             PROJECT_NAME=${PROJECT_NAME,,}
+             echo PROJECT_NAME=${PROJECT_NAME// /-} >> $GITHUB_ENV
+          else
+            echo "Invalid commit message format"
+            exit 1
+          fi
+
       - name: Upload Artifact
         if: ${{ needs.check.outputs.tags_present == 'true' }}
         uses: actions/upload-artifact@v2
         with:
           name: release-artifact
-          path: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}
+          path: ${PROJECT_NAME}-${TAG_PREFIX}-${VERSION_NUMBER}
