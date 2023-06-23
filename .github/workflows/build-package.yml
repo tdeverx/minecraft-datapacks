@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag_prefix: ${{ steps.extract_tags.outputs.tag_prefix }}
+      tags_present: ${{ steps.extract_tags.outputs.tags_present }}
       version_number: ${{ steps.extract_tags.outputs.version_number }}
       project_name: ${{ steps.extract_tags.outputs.project_name }}
     steps:
@@ -25,14 +26,16 @@ jobs:
       -  name: Extract tags
          run: |
           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}"
           if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
-             echo "TAG_PREFIX=${BASH_REMATCH[1]}" >> $GITHUB_ENV
-             echo "VERSION_NUMBER=${BASH_REMATCH[3]}" >> $GITHUB_ENV
+             TAG_PREFIX=${BASH_REMATCH[1]}
+             TAG_PREFIX=${TAG_PREFIX,,}
+             echo "::set-output name=tag_prefix::${TAG_PREFIX}"
+             echo "::set-output name=version_number::${VERSION_NUMBER=${BASH_REMATCH[3]}}"
              PROJECT_NAME="${BASH_REMATCH[2]}"
              PROJECT_NAME=${PROJECT_NAME,,}
              PROJECT_NAME=${PROJECT_NAME// /-}
-             echo "PROJECT_NAME=${PROJECT_NAME}" >> $GITHUB_ENV
+             echo "::set-output name=project_name::${PROJECT_NAME}"
           else
             echo "Invalid commit message format"
             exit 1
@@ -42,9 +45,9 @@ jobs:
           run: |
             TAG_PREFIX="${TAG_PREFIX}"
             if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" ]]; then
-              echo "TAGS_PRESENT=true" >> $GITHUB_ENV
+              echo "::set-output name=tags_present::TRUE"
             else
-              echo "TAGS_PRESENT=false" >> $GITHUB_ENV
+              echo "::set-output name=tags_present::FALSE"
               echo "Tags are not present in the commit message"
               exit 1
             fi
@@ -61,7 +64,7 @@ jobs:
         with:
           path: ${{ needs.check.outputs.project_name }}/
           type: zip
-          filename: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}.zip
+          filename: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
   upload:
@@ -72,8 +75,8 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Upload Artifact
-        if: ${{ env.TAGS_PRESENT == 'true' }}
+        if: ${{ needs.check.outputs.tags_present == 'true' }}
         uses: actions/upload-artifact@v2
         with:
           name: release-artifact
-          path: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}.zip'
+          path: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}
