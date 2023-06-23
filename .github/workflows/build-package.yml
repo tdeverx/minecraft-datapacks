@@ -58,6 +58,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: success()
+    needs: check
     steps:
       - uses: actions/checkout@v3
 
@@ -72,7 +73,7 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     if: success()
-    needs: check
+    needs: build
     steps:
       - uses: actions/checkout@v3
 
