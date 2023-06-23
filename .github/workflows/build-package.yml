@@ -1,10 +1,6 @@
-# This is a basic workflow to help you get started with Actions
-
 name: build-package.yml
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
     branches:
       - main
@@ -14,45 +10,30 @@ on:
       - Pre-Release
       - Build
       - Test
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   check:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-          
+
       - name: Extract commit message
-        id: extract_commit_message
-        if: success()
         run: |
           COMMIT_MESSAGE=${{ github.event.head_commit.message }}
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
-          exit 0
 
       - name: Check tags
-        id: check_tags
-        if: success()
         run: |
-          if [[ ${{ env.COMMIT_MESSAGE }} =~ (v\*|Release|Pre-Release|Build|Test) ]]; then
+          if [[ ${{ env.COMMIT_MESSAGE }} =~ ^(v.*|Release|Pre-Release|Build|Test)$ ]]; then
             echo "TAGS_PRESENT=true" >> $GITHUB_ENV
           else
             echo "TAGS_PRESENT=false" >> $GITHUB_ENV
             echo "Tags are not present in the commit message"
             exit 1
           fi
-          
+
       - name: Get project name
-        id: get_name
-        if: success()
         run: |
           # Extract project name from repository context
           PROJECT_NAME=${{ github.repository }}
@@ -63,53 +44,41 @@ jobs:
 
           # Set environment variable
           echo "FORMATTED_PROJECT_NAME=${PROJECT_NAME}" >> $GITHUB_ENV
-          
-      -  name: Extract version number
-         id: get_version
-         if: success()
-         run: |
-           # Extract version number from commit message
-           if [[ ${{ env.COMMIT_MESSAGE }} =~ ^Release:\ (.+)\ v(.+)$ ]]; then
-             echo "VERSION_NUMBER=${BASH_REMATCH[2]}" >> $GITHUB_ENV
-           else
+
+      - name: Extract version number
+        run: |
+          # Extract version number from commit message
+          if [[ ${{ env.COMMIT_MESSAGE }} =~ ^Release:\ (.+)\ v(.+)$ ]]; then
+            echo "VERSION_NUMBER=${BASH_REMATCH[2]}" >> $GITHUB_ENV
+          else
             echo "Invalid commit message format"
             exit 1
-           fi
-          
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+          fi
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+  build:
+    runs-on: ubuntu-latest
     if: success()
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-          
-      # Runs a single command using the runners shell
+
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: ${{ env.PROJECT_NAME }}/
+          path: ${{ env.FORMATTED_PROJECT_NAME }}/
           type: zip
-          filename: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
+          filename: ${{ env.FORMATTED_PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
-  # This workflow contains a single job called "build"
   upload:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
-    # Steps represent a sequence of tasks that will be executed as part of the job
     if: success()
+    needs: check
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: Upload Artifact
-        if: ${{ steps.tag_names.outputs.names[1] == 'Release' || steps.tag_names.outputs.names[1] == 'Pre-Release' }}
+        if: ${{ env.TAGS_PRESENT == 'true' && (contains(needs.check.outputs.COMMIT_MESSAGE, 'Release') || contains(needs.check.outputs.COMMIT_MESSAGE, 'Pre-Release')) }}
         uses: actions/upload-artifact@v2
         with:
           name: release-artifact
-          path: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
+          path: ${{ env.FORMATTED_PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
