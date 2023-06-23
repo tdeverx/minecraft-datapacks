@@ -43,9 +43,8 @@ jobs:
            
       -   name: Check tags
           run: |
-            TAG_PREFIX="${TAG_PREFIX}"
+            TAG_PREFIX="${{ needs.check.outputs.project_name }}"
             if [[ "${TAG_PREFIX}" == "release" || "${TAG_PREFIX}" == "pre-release" ]]; then
-              echo "::set-output name=tags_present::TRUE"
               echo "tags_present=TRUE" >> $GITHUB_OUTPUT
             else
               echo "tags_present=FALSE" >> $GITHUB_OUTPUT
