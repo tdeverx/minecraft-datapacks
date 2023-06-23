@@ -46,7 +46,7 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: classic-coins/
+          path: ${{ steps.project_name.outputs.name | lower | replace(" ", "-") }}/
           type: zip
           filename: ${{ steps.project_name.outputs.name | lower | replace(" ", "-") }}-${{ steps.tag_name.outputs.name }}.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
