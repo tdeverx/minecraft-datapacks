@@ -22,13 +22,17 @@ jobs:
          run: |
           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
-           "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$
+          if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
              echo "TAG_PREFIX=${BASH_REMATCH[1]}" >> $GITHUB_ENV
              echo "VERSION_NUMBER=${BASH_REMATCH[3]}" >> $GITHUB_ENV
-             "PROJECT_NAME=${BASH_REMATCH[2]}"
-               PROJECT_NAME=${PROJECT_NAME,,}
-             echo PROJECT_NAME=${PROJECT_NAME// /-} >> $GITHUB_ENV
-           fi
+             PROJECT_NAME="${BASH_REMATCH[2]}"
+             PROJECT_NAME=${PROJECT_NAME,,}
+             PROJECT_NAME=${PROJECT_NAME// /-}
+             echo "PROJECT_NAME=${PROJECT_NAME}" >> $GITHUB_ENV
+          else
+            echo "Invalid commit message format"
+            exit 1
+          fi
            
       -   name: Check tags
           run: |
