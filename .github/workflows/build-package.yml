@@ -15,6 +15,10 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs:
+      tag_prefix: ${{ steps.extract_tags.outputs.tag_prefix }}
+      version_number: ${{ steps.extract_tags.outputs.version_number }}
+      project_name: ${{ steps.extract_tags.outputs.project_name }}
     steps:
       - uses: actions/checkout@v3
 
@@ -55,9 +59,9 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: '${{ env.PROJECT_NAME }}/'
+          path: ${{ needs.check.outputs.project_name }}/
           type: zip
-          filename: '${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip'
+          filename: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
   upload:
@@ -72,4 +76,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: release-artifact
-          path: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
+          path: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}.zip'
