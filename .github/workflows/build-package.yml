@@ -36,7 +36,7 @@ jobs:
            
       -   name: Check tags
           run: |
-            if [[ "${TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" && "${TAG_PREFIX}" != "build" && "${TAG_PREFIX}" != "test" ]]; then
+            if [[ "${env.TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" && "${TAG_PREFIX}" != "build" && "${TAG_PREFIX}" != "test" ]]; then
               echo "Tags are not present in the commit message"
               exit 1
             fi
@@ -66,7 +66,7 @@ jobs:
           
       -   name: Check tags
           run: |
-            if [[ "${TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" ]]; then
+            if [[ "${env.TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" ]]; then
               echo "Tags are not present in the commit message"
               exit 1
             fi
@@ -74,9 +74,9 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: ${PROJECT_NAME}/
+          path: "${env.PROJECT_NAME}/"
           type: zip
-          filename: ${PROJECT_NAME}-${TAG_PREFIX}-${VERSION_NUMBER}
+          filename: ${env.PROJECT_NAME}-${env.TAG_PREFIX}-${env.VERSION_NUMBER}
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
   upload:
