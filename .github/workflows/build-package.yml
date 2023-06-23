@@ -55,9 +55,9 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: ${{ env.PROJECT_NAME }}/
+          path: '${{ env.PROJECT_NAME }}/'
           type: zip
-          filename: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
+          filename: '${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip'
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
   upload:
