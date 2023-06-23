@@ -22,7 +22,7 @@ jobs:
          run: |
            COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
            echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
-           if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
+           if [[ $COMMIT_MESSAGE =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
              TAG_PREFIX="${BASH_REMATCH[1],,}"
              echo "TAG_PREFIX=${TAG_PREFIX}" >> $GITHUB_ENV
              VERSION_NUMBER="${BASH_REMATCH[3]}"
