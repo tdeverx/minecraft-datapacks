@@ -36,16 +36,14 @@ jobs:
            
       -   name: Check tags
           run: |
-            case "${env.TAG_PREFIX}" in
-              "Release"|"Pre-Release"|"Build"|"Test")
-                echo "TAGS_PRESENT=true" >> $GITHUB_ENV
-            ;;
-            *)
-                echo "TAGS_PRESENT=false" >> $GITHUB_ENV
-                echo "Tags are not present in the commit message"
-                exit 1
-            ;;
-            esac
+            TAG_PREFIX="${env.TAG_PREFIX}"
+            if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" || "${TAG_PREFIX}" == "Build" || "${TAG_PREFIX}" == "Test" ]]; then
+              echo "TAGS_PRESENT=true" >> $GITHUB_ENV
+            else
+              echo "TAGS_PRESENT=false" >> $GITHUB_ENV
+              echo "Tags are not present in the commit message"
+              exit 1
+            fi
 
   build:
     runs-on: ubuntu-latest
