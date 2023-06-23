@@ -42,7 +42,7 @@ jobs:
 
       - name: Get tag names
         id: tag_names
-        run: echo "::set-output name=names::$(echo ${{ github.event.ref }} | cut -d/ -f3-)"
+        run: echo "::set-output name=names::$(echo ${{ github.ref }} | cut -d/ -f3-)"
 
       # Runs a single command using the runners shell
       - name: Archive Release
