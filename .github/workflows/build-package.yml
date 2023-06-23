@@ -37,7 +37,7 @@ jobs:
       -   name: Check tags
           run: |
             TAG_PREFIX="${TAG_PREFIX}"
-            if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" || "${TAG_PREFIX}" == "Build" || "${TAG_PREFIX}" == "Test" ]]; then
+            if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" ]]; then
               echo "TAGS_PRESENT=true" >> $GITHUB_ENV
             else
               echo "TAGS_PRESENT=false" >> $GITHUB_ENV
@@ -55,9 +55,9 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: ${{ env.FORMATTED_PROJECT_NAME }}/
+          path: ${{ env.PROJECT_NAME }}/
           type: zip
-          filename: ${{ env.FORMATTED_PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
+          filename: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
 
   upload:
@@ -68,8 +68,8 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Upload Artifact
-        if: ${{ env.TAGS_PRESENT == 'true' && (contains(needs.check.outputs.COMMIT_MESSAGE, 'Release') || contains(needs.check.outputs.COMMIT_MESSAGE, 'Pre-Release')) }}
+        if: ${{ env.TAGS_PRESENT == 'true' }}
         uses: actions/upload-artifact@v2
         with:
           name: release-artifact
-          path: ${{ env.FORMATTED_PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
+          path: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
