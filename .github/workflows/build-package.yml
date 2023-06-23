@@ -23,15 +23,15 @@ jobs:
           COMMIT_MESSAGE=${{ github.event.head_commit.message }}
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
 
-      - name: Check tags
-        run: |
-          if [[ ${{ env.COMMIT_MESSAGE }} =~ ^(v.*|Release|Pre-Release|Build|Test)$ ]]; then
-            echo "TAGS_PRESENT=true" >> $GITHUB_ENV
-          else
-            echo "TAGS_PRESENT=false" >> $GITHUB_ENV
-            echo "Tags are not present in the commit message"
-            exit 1
-          fi
+      -  name: Check tags
+         run: |
+           if [[ "${COMMIT_MESSAGE}" =~ ^(v.*|Release|Pre-Release|Build|Test)$ ]]; then
+             echo "TAGS_PRESENT=true" >> $GITHUB_ENV
+           else
+             echo "TAGS_PRESENT=false" >> $GITHUB_ENV
+             echo "Tags are not present in the commit message"
+             exit 1
+           fi
 
       - name: Get project name
         run: |
