@@ -15,11 +15,6 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    outputs:
-      tag_prefix: ${{ steps.check.outputs.tag_prefix }}
-      tags_present: ${{ steps.check.outputs.tags_present }}
-      version_number: ${{ steps.check.outputs.version_number }}
-      project_name: ${{ steps.check.outputs.project_name }}
     steps:
       - uses: actions/checkout@v3
 
@@ -30,12 +25,10 @@ jobs:
           if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
              TAG_PREFIX=${BASH_REMATCH[1]}
              TAG_PREFIX=${TAG_PREFIX,,}
-             echo "tag_prefix=${TAG_PREFIX}" >> $GITHUB_OUTPUT
-             echo "version_number=${VERSION_NUMBER=${BASH_REMATCH[3]}}" >> $GITHUB_OUTPUT
+             "version_number=${VERSION_NUMBER=${BASH_REMATCH[3]}}"
              PROJECT_NAME="${BASH_REMATCH[2]}"
              PROJECT_NAME=${PROJECT_NAME,,}
              PROJECT_NAME=${PROJECT_NAME// /-}
-             echo "project_name=${PROJECT_NAME}" >> $GITHUB_OUTPUT
           else
             echo "Invalid commit message format"
             exit 1
@@ -43,11 +36,7 @@ jobs:
            
       -   name: Check tags
           run: |
-            TAG_PREFIX="${{ needs.check.outputs.project_name }}"
-            if [[ "${TAG_PREFIX}" == "release" || "${TAG_PREFIX}" == "pre-release" ]]; then
-              echo "tags_present=TRUE" >> $GITHUB_OUTPUT
-            else
-              echo "tags_present=FALSE" >> $GITHUB_OUTPUT
+            if [[ "${TAG_PREFIX}" != "release" && "${TAG_PREFIX}" != "pre-release" ]]; then
               echo "Tags are not present in the commit message"
               exit 1
             fi
@@ -59,10 +48,26 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      -  name: Extract tags
+         run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}"
+          if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
+             TAG_PREFIX=${BASH_REMATCH[1]}
+             TAG_PREFIX=${TAG_PREFIX,,}
+             "version_number=${VERSION_NUMBER=${BASH_REMATCH[3]}}"
+             PROJECT_NAME="${BASH_REMATCH[2]}"
+             PROJECT_NAME=${PROJECT_NAME,,}
+             PROJECT_NAME=${PROJECT_NAME// /-}
+          else
+            echo "Invalid commit message format"
+            exit 1
+          fi
+
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: ${{ needs.check.outputs.project_name }}/
+          path: PROJECT_NAME/
           type: zip
           filename: ${{ needs.check.outputs.project_name }}-${{ needs.check.outputs.tag_prefix }}-${{ needs.check.outputs.version_number }}
           exclusions: '*.git* /*node_modules/* .editorconfig'
