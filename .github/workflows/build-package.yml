@@ -28,7 +28,7 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
         with:
-          path: Classic-Coins/
+          path: classic-coins/
           type: zip
           filename: release.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
