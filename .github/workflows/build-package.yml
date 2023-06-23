@@ -44,7 +44,7 @@ jobs:
       -   name: Check tags
           run: |
             TAG_PREFIX="${TAG_PREFIX}"
-            if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" ]]; then
+            if [[ "${TAG_PREFIX}" == "release" || "${TAG_PREFIX}" == "pre-release" ]]; then
               echo "::set-output name=tags_present::TRUE"
               echo "tags_present=TRUE" >> $GITHUB_OUTPUT
             else
