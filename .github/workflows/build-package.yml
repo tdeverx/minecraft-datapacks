@@ -36,7 +36,7 @@ jobs:
            
       -   name: Check tags
           run: |
-            TAG_PREFIX="${env.TAG_PREFIX}"
+            TAG_PREFIX="${TAG_PREFIX}"
             if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" || "${TAG_PREFIX}" == "Build" || "${TAG_PREFIX}" == "Test" ]]; then
               echo "TAGS_PRESENT=true" >> $GITHUB_ENV
             else
