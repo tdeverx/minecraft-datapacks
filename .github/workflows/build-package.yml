@@ -18,42 +18,29 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract commit message
-        run: |
+      -  name: Extract tags
+         run: |
           COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
-
-      -  name: Check tags
-         run: |
-           if [[ "${COMMIT_MESSAGE}" =~ ^Release|Pre-Release|Build|Test:\ .+\ v.+ ]]; then
-             echo "TAGS_PRESENT=true" >> $GITHUB_ENV
-           else
-             echo "TAGS_PRESENT=false" >> $GITHUB_ENV
-             echo "Tags are not present in the commit message"
-             exit 1
-           fi
-
-      - name: Get project name
-        run: |
-          # Extract project name from repository context
-          PROJECT_NAME=${{ github.repository }}
-
-          # Format project name
-          PROJECT_NAME=${PROJECT_NAME,,}   # Convert to lowercase
-          PROJECT_NAME=${PROJECT_NAME// /-} # Replace spaces with hyphens
-
-          # Set environment variable
-          echo "FORMATTED_PROJECT_NAME=${PROJECT_NAME}" >> $GITHUB_ENV
-
-      - name: Extract version number
-        run: |
-          # Extract version number from commit message
-          if [[ ${{ env.COMMIT_MESSAGE }} =~ ^Release:\ (.+)\ v(.+)$ ]]; then
-            echo "VERSION_NUMBER=${BASH_REMATCH[2]}" >> $GITHUB_ENV
-          else
-            echo "Invalid commit message format"
-            exit 1
-          fi
+           "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$
+             echo "TAG_PREFIX=${BASH_REMATCH[1]}" >> $GITHUB_ENV
+             echo "VERSION_NUMBER=${BASH_REMATCH[3]}" >> $GITHUB_ENV
+             "PROJECT_NAME=${BASH_REMATCH[2]}"
+               PROJECT_NAME=${PROJECT_NAME,,}
+             echo PROJECT_NAME=${PROJECT_NAME// /-} >> $GITHUB_ENV
+           
+      -   name: Check tags
+          run: |
+            case "${env.TAG_PREFIX}" in
+              "Release"|"Pre-Release"|"Build"|"Test")
+                echo "TAGS_PRESENT=true" >> $GITHUB_ENV
+            ;;
+            *)
+                echo "TAGS_PRESENT=false" >> $GITHUB_ENV
+                echo "Tags are not present in the commit message"
+                exit 1
+            ;;
+            esac
 
   build:
     runs-on: ubuntu-latest
