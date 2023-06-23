@@ -28,6 +28,7 @@ jobs:
              "PROJECT_NAME=${BASH_REMATCH[2]}"
                PROJECT_NAME=${PROJECT_NAME,,}
              echo PROJECT_NAME=${PROJECT_NAME// /-} >> $GITHUB_ENV
+           fi
            
       -   name: Check tags
           run: |
