@@ -24,11 +24,11 @@ jobs:
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}"
           if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
              TAG_PREFIX=${BASH_REMATCH[1]}
-             TAG_PREFIX=${TAG_PREFIX,,}
-             VERSION_NUMBER=${BASH_REMATCH[3]}}
+             echo TAG_PREFIX=${TAG_PREFIX,,} >> $GITHUB_ENV
+             echo VERSION_NUMBER=${BASH_REMATCH[3]}} >> $GITHUB_ENV
              PROJECT_NAME="${BASH_REMATCH[2]}"
              PROJECT_NAME=${PROJECT_NAME,,}
-             PROJECT_NAME=${PROJECT_NAME// /-}
+             echo PROJECT_NAME=${PROJECT_NAME// /-} >> $GITHUB_ENV
           else
             echo "Invalid commit message format"
             exit 1
@@ -75,7 +75,9 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     if: success()
-    needs: build
+    needs:
+    - check
+    - build
     steps:
       - uses: actions/checkout@v3
 
