@@ -36,6 +36,7 @@ jobs:
         run: |
           COMMIT_MESSAGE=${{ github.event.head_commit.message }}
           echo "COMMIT_MESSAGE=${COMMIT_MESSAGE}" >> $GITHUB_ENV
+          exit 0
 
       - name: Check tags
         id: check_tags
