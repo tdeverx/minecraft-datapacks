@@ -45,6 +45,8 @@ jobs:
             echo "TAGS_PRESENT=true" >> $GITHUB_ENV
           else
             echo "TAGS_PRESENT=false" >> $GITHUB_ENV
+            echo "Tags are not present in the commit message"
+            exit 1
           fi
           
       - name: Get project name
@@ -79,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
-    if: ${{ env.TAGS_PRESENT == 'true' }}
+    if: success()
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
@@ -92,12 +94,6 @@ jobs:
           type: zip
           filename: ${{ env.PROJECT_NAME }}-${{ env.VERSION_NUMBER }}.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
-          
-      - name: Exit
-        if: ${{ env.TAGS_PRESENT != 'true' }}
-        run: |
-          echo "Tags are not present in the commit message"
-          exit 1
 
   # This workflow contains a single job called "build"
   upload:
