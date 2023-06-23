@@ -32,7 +32,6 @@ jobs:
 
       - name: Get tag names
         id: tag_names
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
           commit_message="${{ github.event.head_commit.message }}"
           tag_name=$(echo "$commit_message" | grep -oP '(?<=Release: |Pre-Release: )v?\d+\.\d+\.\d+')
