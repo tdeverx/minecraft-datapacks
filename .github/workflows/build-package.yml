@@ -25,7 +25,7 @@ jobs:
 
       -  name: Check tags
          run: |
-           if [[ "${COMMIT_MESSAGE}" =~ ^(v.*|Release|Pre-Release|Build|Test)$ ]]; then
+           if [[ "${COMMIT_MESSAGE}" =~ ^Release|Pre-Release|Build|Test:\ .+\ v.+ ]]; then
              echo "TAGS_PRESENT=true" >> $GITHUB_ENV
            else
              echo "TAGS_PRESENT=false" >> $GITHUB_ENV
