@@ -16,10 +16,10 @@ jobs:
   check:
     runs-on: ubuntu-latest
     outputs:
-      tag_prefix: ${{ steps.extract_tags.outputs.tag_prefix }}
-      tags_present: ${{ steps.extract_tags.outputs.tags_present }}
-      version_number: ${{ steps.extract_tags.outputs.version_number }}
-      project_name: ${{ steps.extract_tags.outputs.project_name }}
+      tag_prefix: ${{ steps.check.outputs.tag_prefix }}
+      tags_present: ${{ steps.check.outputs.tags_present }}
+      version_number: ${{ steps.check.outputs.version_number }}
+      project_name: ${{ steps.check.outputs.project_name }}
     steps:
       - uses: actions/checkout@v3
 
@@ -30,12 +30,12 @@ jobs:
           if [[ "${COMMIT_MESSAGE}" =~ ^(Release|Pre-Release|Build|Test):\ (.+)\ v(.+)$ ]]; then
              TAG_PREFIX=${BASH_REMATCH[1]}
              TAG_PREFIX=${TAG_PREFIX,,}
-             echo "::set-output name=tag_prefix::${TAG_PREFIX}"
-             echo "::set-output name=version_number::${VERSION_NUMBER=${BASH_REMATCH[3]}}"
+             echo "tag_prefix=${TAG_PREFIX}" >> $GITHUB_OUTPUT
+             echo "version_number=${VERSION_NUMBER=${BASH_REMATCH[3]}}" >> $GITHUB_OUTPUT
              PROJECT_NAME="${BASH_REMATCH[2]}"
              PROJECT_NAME=${PROJECT_NAME,,}
              PROJECT_NAME=${PROJECT_NAME// /-}
-             echo "::set-output name=project_name::${PROJECT_NAME}"
+             echo "project_name=${PROJECT_NAME}" >> $GITHUB_OUTPUT
           else
             echo "Invalid commit message format"
             exit 1
@@ -46,8 +46,9 @@ jobs:
             TAG_PREFIX="${TAG_PREFIX}"
             if [[ "${TAG_PREFIX}" == "Release" || "${TAG_PREFIX}" == "Pre-Release" ]]; then
               echo "::set-output name=tags_present::TRUE"
+              echo "tags_present=TRUE" >> $GITHUB_OUTPUT
             else
-              echo "::set-output name=tags_present::FALSE"
+              echo "tags_present=FALSE" >> $GITHUB_OUTPUT
               echo "Tags are not present in the commit message"
               exit 1
             fi
