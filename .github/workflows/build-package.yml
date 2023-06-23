@@ -21,7 +21,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  checks:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -32,7 +32,6 @@ jobs:
 
       - name: Get tag names
         id: tag_names
-        if: startsWith(github.ref, 'refs/tags/')
         run: |
           commit_message="${{ github.event.head_commit.message }}"
           tag_name=$(echo "$commit_message" | grep -oP '(?<=Release: |Pre-Release: )v?\d+\.\d+\.\d+')
@@ -63,6 +62,16 @@ jobs:
             exit 1
           fi
           
+  # This workflow contains a single job called "build"
+  build-package:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+          
       # Runs a single command using the runners shell
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.1
@@ -71,6 +80,16 @@ jobs:
           type: zip
           filename: release.zip
           exclusions: '*.git* /*node_modules/* .editorconfig'
+
+  # This workflow contains a single job called "build"
+  upload-package:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
 
       - name: Upload Artifact
         if: ${{ steps.tag_names.outputs.names[1] == 'Release' || steps.tag_names.outputs.names[1] == 'Pre-Release' }}
